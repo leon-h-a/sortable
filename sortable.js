@@ -37,25 +37,51 @@
  *
  */
 document.addEventListener('click', function (e) {
+
+    // * svaka tablica u klasi mora sadrzavati atribut 'empty-click-reset'
+    // da bi bila resetirana prilikom klika u prazno
+    // * gumb za reset mora imati isti 'name' ili 'id' param kao pripadadajuca
+    // tablica da bi se trigalo resetiranje na toj tablici
+ 
+    const target = e.target;
+
+    // if (target.matches('a, button, [onclick], .clickable, [role="button"], .sortable, th, td')) {
+    //     console.log('IGNORE: Clicked on a clickable element.');
+    // } else {
+    //     console.log('RESET: Clicked on blank space or non-clickable element.');
+    // }
+
     try {
         // allows for elements inside TH
         function findElementRecursive(element, tag) {
             return element.nodeName === tag ? element : findElementRecursive(element.parentNode, tag);
         }
+        // definicije
         var ascending_table_sort_class = 'asc';
         var no_sort_class = 'no-sort';
         var null_last_class = 'n-last';
         var table_class_name = 'sortable';
         var alt_sort_1 = e.shiftKey || e.altKey;
         var element = findElementRecursive(e.target, 'TH');
+        // console.log(element);
         var tr = element.parentNode;
         var thead = tr.parentNode;
         var table = thead.parentNode;
+
+        tbody = table.tBodies[0];
+        // ako table ima neki atribut da je reset dozvoljen, append 
+        // skrivenu kolonu rednih brojeva. Ako table vec ima te brojeve, skip
+        console.log(tbody);
+
+        // sve vrijednosti redova unutar kliknutog stupca
         function getValue(element) {
             var _a;
             var value = alt_sort_1 ? element.dataset.sortAlt : (_a = element.dataset.sort) !== null && _a !== void 0 ? _a : element.textContent;
+            // console.log(value);
             return value;
         }
+
+        // asdf
         if (thead.nodeName === 'THEAD' && // sortable only triggered in `thead`
             table.classList.contains(table_class_name) &&
             !element.classList.contains(no_sort_class) // .no-sort is now core functionality, no longer handled in CSS
@@ -63,7 +89,13 @@ document.addEventListener('click', function (e) {
             var column_index_1;
             var nodes = tr.cells;
             var tiebreaker_1 = +element.dataset.sortTbr;
+            
+            // console.log(nodes);
+            // console.log(tiebreaker_1);
+
             // Reset thead cells and get column index
+
+            // saznaj koji je index kolone koja je kliknuta
             for (var i = 0; i < nodes.length; i++) {
                 if (nodes[i] === element) {
                     column_index_1 = +element.dataset.sortCol || i;
@@ -72,6 +104,7 @@ document.addEventListener('click', function (e) {
                     nodes[i].setAttribute('aria-sort', 'none');
                 }
             }
+            // promjena smjera u headeru + resetiranje ostalih kolona u 'none'
             var direction = 'descending';
             if (element.getAttribute('aria-sort') === 'descending' ||
                 (table.classList.contains(ascending_table_sort_class) && element.getAttribute('aria-sort') !== 'ascending')) {
@@ -84,6 +117,7 @@ document.addEventListener('click', function (e) {
             var compare_1 = function (a, b, index) {
                 var x = getValue(b.cells[index]);
                 var y = getValue(a.cells[index]);
+                
                 if (sort_null_last_1) {
                     if (x === '' && y !== '') {
                         return -1;
@@ -96,6 +130,12 @@ document.addEventListener('click', function (e) {
                 var bool = isNaN(temp) ? x.localeCompare(y) : temp;
                 return reverse_1 ? -bool : bool;
             };
+            var sort_reset = function () {
+                // tbd
+            }
+            //
+            // glavna sort funkcija
+            //
             // loop through all tbodies and sort them
             for (var i = 0; i < table.tBodies.length; i++) {
                 var org_tbody = table.tBodies[i];
